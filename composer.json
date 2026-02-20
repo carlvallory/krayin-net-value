@@ -1,0 +1,26 @@
+{
+    "name": "carlvallory/krayin-net-value",
+    "description": "Krayin Custom Net Value Package",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Carl Vallory",
+            "email": "example@example.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "CarlVallory\\KrayinNetValue\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "CarlVallory\\KrayinNetValue\\Providers\\KrayinNetValueServiceProvider"
+            ],
+            "aliases": {}
+        }
+    },
+    "minimum-stability": "dev"
+}
