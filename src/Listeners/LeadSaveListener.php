@@ -18,6 +18,22 @@ class LeadSaveListener
     }
 
     /**
+     * Mapeo de custom_attributes EAV → columnas directas en la tabla leads.
+     * 
+     * @var array
+     */
+    private $fieldMapping = [
+        'custom_net_value'       => 'net_value',
+        'branch'                 => 'branch',
+        'sale_variation'         => 'sale_variation',
+        'order_type'             => 'order_type',
+        'usd_rate'               => 'usd_rate',
+        'total_usd'              => 'total_usd',
+        'wc_product_ids'         => 'wc_product_ids',
+        'is_incomplete_purchase' => 'is_incomplete_purchase',
+    ];
+
+    /**
      * Handle the event.
      *
      * @param  \Webkul\Lead\Contracts\Lead  $lead
@@ -25,15 +41,20 @@ class LeadSaveListener
      */
     public function handle($lead)
     {
-        // El plugin WooCommerce u otra fuente envia `custom_net_value` por EAV de Krayin
-        // Revisamos si el lead actual tiene ese atributo
-        if (isset($lead->custom_net_value)) {
-            $netValue = $lead->custom_net_value;
+        $updates = [];
 
-            // Update directly to avoid recursion since we are in a lead.after save event
+        // Mapear cada custom_attribute EAV a su columna directa en leads
+        foreach ($this->fieldMapping as $eavField => $dbColumn) {
+            if (isset($lead->{$eavField})) {
+                $updates[$dbColumn] = $lead->{$eavField};
+            }
+        }
+
+        // Update directly to avoid recursion since we are in a lead.after save event
+        if (!empty($updates)) {
             \Illuminate\Support\Facades\DB::table('leads')
                 ->where('id', $lead->id)
-                ->update(['net_value' => $netValue]);
+                ->update($updates);
         }
     }
 }
