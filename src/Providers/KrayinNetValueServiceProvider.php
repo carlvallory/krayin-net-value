@@ -16,6 +16,11 @@ class KrayinNetValueServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
 
+        $this->app->bind(
+            \CarlVallory\KrayinNetValue\Services\Bcp\BcpRateFetcher::class,
+            \CarlVallory\KrayinNetValue\Services\Bcp\BcpHttpRateFetcher::class
+        );
+
         // No frontend/translation files needed for this backend backend package.
         
         // Listen to Lead creations and updates to sync net_value
