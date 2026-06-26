@@ -21,6 +21,12 @@ class KrayinNetValueServiceProvider extends ServiceProvider
             \CarlVallory\KrayinNetValue\Services\Bcp\BcpHttpRateFetcher::class
         );
 
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \CarlVallory\KrayinNetValue\Console\Commands\BackfillExchangeRates::class,
+            ]);
+        }
+
         // No frontend/translation files needed for this backend backend package.
         
         // Listen to Lead creations and updates to sync net_value
