@@ -24,6 +24,7 @@ class KrayinNetValueServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 \CarlVallory\KrayinNetValue\Console\Commands\BackfillExchangeRates::class,
+                \CarlVallory\KrayinNetValue\Console\Commands\PollExchangeRate::class,
             ]);
         }
 
