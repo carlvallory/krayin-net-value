@@ -74,4 +74,41 @@ La migración, además de crear la columna vacía, ejecutará un script que auto
 Para que este paquete cobre sentido, recuerda que tu ecosistema debe cumplir 2 factores externos:
 
 1.  **WooCommerce Plugin:** Debes actualizar el archivo `class-data-mapper.php` del plugin `woocommerce-krayin-crm` para que aplique los cálculos de comisión de PagoPar y envíe la clave `custom_net_value` en su payload hacia Krayin.
-2.  **Krayin Financial Reports:** Debes ir a tu otro paquete `CarlVallory/KrayinFinancialReports` (específicamente al `FinancialReportController.php`) y reemplazar todas las consultas que digan `sum('lead_value')` por `sum('net_value')`. (Este cambio ya se realizó en el entorno de desarrollo local).
+2.  **Krayin Financial Reports:** Debes ir a tu otro paquete `CarlVallory/KrayinFinancialReports` (específicamente al `FinancialReportController.php`) y reemplazar todas las consultas que digan `sum('lead_value')` por `sum('net_value')`. (Este cambio ya se realizó y está commiteado: `KrayinFinancialReports@66a3a10`).
+
+---
+
+## 💱 Conversión a USD (cotización BCP)
+
+Este paquete también incorpora la valorización de los ingresos en **USD**, usando la cotización
+oficial de **Venta** del **BCP** del **día del pedido** (`leads.created_at`), con fallback al último
+día hábil previo. Las tasas se espejan localmente en la tabla `exchange_rates` y la conversión se
+denormaliza en `leads.usd_rate` / `leads.total_usd`. Solo se maneja el par **USD/PYG**.
+
+### ⚠️ Comandos que hay que correr para poblar los datos
+
+> **IMPORTANTE — recordatorio:** tras desplegar (o en un entorno nuevo con leads cargados), los KPIs
+> en USD del reporte financiero salen en **cero** hasta que se ejecuten estos dos comandos. El primero
+> trae las cotizaciones del BCP; el segundo calcula el `total_usd` de los leads ganados.
+
+```bash
+# 1. Puebla la tabla exchange_rates con el histórico anual del BCP (idempotente)
+php artisan exchange-rates:backfill 2026
+
+# 2. Calcula usd_rate y total_usd de los leads ganados de ese año (idempotente)
+php artisan leads:backfill-usd 2026
+```
+
+Cambiá `2026` por el año que necesites recalcular. Ambos comandos son idempotentes (se pueden correr
+las veces que haga falta sin duplicar ni romper nada).
+
+### 🔄 Automatización (ya configurada en el scheduler)
+
+No hace falta correrlos a mano de forma recurrente: el `app/Console/Kernel.php` del CRM ya los programa.
+Solo asegurate de que el cron de Laravel esté activo (`* * * * * php artisan schedule:run`):
+
+*   `exchange-rates:poll` — días hábiles a las **14:00, 16:00 y 18:00** (3 reintentos; la referencial del BCP cierra después de las 13:00).
+*   `leads:backfill-usd <año en curso>` — todas las noches a las **02:00**.
+
+> El `backfill` anual de arriba se corre **una sola vez** por año (o cuando se re-sincronicen pedidos
+> históricos); el `poll` + `backfill-usd` nocturnos mantienen todo al día de ahí en adelante.
