@@ -25,6 +25,7 @@ class KrayinNetValueServiceProvider extends ServiceProvider
             $this->commands([
                 \CarlVallory\KrayinNetValue\Console\Commands\BackfillExchangeRates::class,
                 \CarlVallory\KrayinNetValue\Console\Commands\PollExchangeRate::class,
+                \CarlVallory\KrayinNetValue\Console\Commands\BackfillLeadsUsd::class,
             ]);
         }
 
