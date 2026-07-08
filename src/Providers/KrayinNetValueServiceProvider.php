@@ -51,7 +51,24 @@ class KrayinNetValueServiceProvider extends ServiceProvider
         Event::listen('lead.update.after', 'CarlVallory\KrayinNetValue\Listeners\LeadSaveListener@handle');
     }
 
-    // Registration not required
-
-        // No config/menu registration needed.
+    /**
+     * Register services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        // Gate de la doc Swagger en producción: vive en el paquete (no en el
+        // config del fork) porque producción corre el core upstream de Krayin.
+        // Va en register() porque todos los register() corren antes que
+        // cualquier boot(), o sea antes de que l5-swagger registre sus rutas.
+        // 'web' + 'user' (Bouncer de Krayin): sin sesión redirige al login de
+        // admin; 'auth:user' rompía con "Route [login] not defined".
+        if ($this->app->environment('production')) {
+            config([
+                'l5-swagger.defaults.routes.middleware.api'  => ['web', 'user'],
+                'l5-swagger.defaults.routes.middleware.docs' => ['web', 'user'],
+            ]);
+        }
+    }
 }
