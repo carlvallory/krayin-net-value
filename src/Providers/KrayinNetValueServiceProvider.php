@@ -26,6 +26,7 @@ class KrayinNetValueServiceProvider extends ServiceProvider
                 \CarlVallory\KrayinNetValue\Console\Commands\BackfillExchangeRates::class,
                 \CarlVallory\KrayinNetValue\Console\Commands\PollExchangeRate::class,
                 \CarlVallory\KrayinNetValue\Console\Commands\BackfillLeadsUsd::class,
+                \CarlVallory\KrayinNetValue\Console\Commands\BackfillNetValue::class,
             ]);
         }
 
